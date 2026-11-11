@@ -1,20 +1,23 @@
-<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Sign in • Draco Drive</title><link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🐉</text></svg>"><link rel="stylesheet" href="assets/style.css"></head><body data-page="login"><div class="card">
-<div class="logo" style="font-size:26px">🐉 Draco Drive</div><p class="m">Sign in to your files</p>
-<form id="f"><input class="f" id="em" type="email" placeholder="Email" autocomplete="email" required>
-<input class="f" id="pw" type="password" placeholder="Password" autocomplete="current-password" minlength="8" required>
-<input class="f" id="pw2" type="password" placeholder="Confirm password" autocomplete="new-password" hidden>
-<button class="pri" id="go" style="width:100%;padding:11px">Sign in</button></form>
-<p><a id="tog">Create an account</a> · <a id="fg">Forgot password?</a></p><p id="msg" class="m" role="status"></p>
-<div class="or">— or —</div><button id="sso" style="width:100%;padding:11px">Continue with Caged Dragon</button></div>
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Sign in • Draco Drive</title><link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🐉</text></svg>"><script>document.documentElement.dataset.theme=localStorage.dd_theme||(matchMedia("(prefers-color-scheme: dark)").matches?"dark":"light");document.documentElement.lang=localStorage.dd_lang||"en"</script><link rel="stylesheet" href="assets/style.css"></head><body data-page="login"><div class="ctl" id="ctl"></div><div class="card">
+<div class="logo" style="font-size:26px">🐉 Draco Drive</div><p class="m" data-i="Sign in to your files"></p>
+<form id="f"><input class="f" id="em" type="email" data-p="Email" autocomplete="email" required>
+<input class="f" id="pw" type="password" data-p="Password" autocomplete="current-password" minlength="8" required>
+<input class="f" id="pw2" type="password" data-p="Confirm password" autocomplete="new-password" hidden>
+<button class="pri" id="go" style="width:100%;padding:11px" data-i="Sign in"></button></form>
+<p><a id="tog" data-i="Create an account"></a> · <a id="fg" data-i="Forgot password?"></a></p><p id="msg" class="m" role="status"></p>
+<div class="or">— <span data-i="or"></span> —</div><button id="sso" style="width:100%;padding:11px" data-i="Continue with Caged Dragon"></button></div>
 <script type="module">
 import {sb} from './assets/db.js';
+import {t,ctl,bindCtl} from './assets/ui.js';
 const $=id=>document.getElementById(id),base=location.origin+location.pathname.replace(/[^/]*$/,'');
-const dest=()=>'drive.html'+(sessionStorage.getItem('dd_next')||'');let mode='in';
-const msg=(t,bad)=>{$('msg').textContent=t;$('msg').style.color=bad?'#e5534b':''};
+const dest=()=>'drive.html'+(sessionStorage.getItem('dd_next')||'');let mode='in',note=null;
+const msg=(k,bad)=>{note=k?[k,bad]:null;$('msg').textContent=k?t(k):'';$('msg').style.color=bad?'#d9534f':''};
+const apply=()=>{document.querySelectorAll('[data-i]').forEach(e=>e.textContent=t(mode==='up'&&e.id==='go'?'Create account':mode==='up'&&e.id==='tog'?'I already have an account':e.dataset.i));
+  document.querySelectorAll('[data-p]').forEach(e=>e.placeholder=t(e.dataset.p));if(note)msg(...note)};
+const paint=()=>{$('ctl').innerHTML=ctl();bindCtl(paint);apply()};paint();
 const {data:{session}}=await sb.auth.getSession();if(session)location.replace(dest());
 sb.auth.onAuthStateChange((e,s)=>{if(s&&e==='SIGNED_IN')location.replace(dest())});
-$('tog').onclick=()=>{mode=mode==='in'?'up':'in';$('go').textContent=mode==='in'?'Sign in':'Create account';
-  $('tog').textContent=mode==='in'?'Create an account':'I already have an account';$('pw2').hidden=mode==='in';$('pw2').required=mode==='up';msg('')};
+$('tog').onclick=()=>{mode=mode==='in'?'up':'in';$('pw2').hidden=mode==='in';$('pw2').required=mode==='up';msg('');apply()};
 $('f').onsubmit=async e=>{e.preventDefault();const email=$('em').value.trim(),password=$('pw').value;$('go').disabled=true;
   if(mode==='up'){
     if(password!==$('pw2').value)msg('Passwords do not match.',1);
